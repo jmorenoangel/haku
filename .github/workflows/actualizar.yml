@@ -37,6 +37,12 @@ jobs:
           name: conjuntos
           path: salida/conjuntos.csv
           retention-days: 14
+      - name: Guardar el informe para descargar
+        uses: actions/upload-artifact@v4
+        with:
+          name: informe
+          path: salida/sitio/index.html
+          retention-days: 14
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
