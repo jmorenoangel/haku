@@ -1,0 +1,53 @@
+name: Actualizar informe
+
+on:
+  schedule:
+    - cron: "7 11 * * *"   # 6:07 a. m. hora Colombia, todos los días
+  workflow_dispatch:        # botón "Run workflow" para correrlo a mano
+  push:
+    branches: [main]
+    paths: ["config/**", "web/**", "scripts/**", ".github/workflows/**"]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  generar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Traer datos de Meta y armar el informe
+        run: python scripts/actualizar.py
+        env:
+          META_TOKEN: ${{ secrets.META_TOKEN }}
+          INFORME_PIN: ${{ secrets.INFORME_PIN }}
+      - name: Guardar lista de conjuntos (para revisar la agrupación)
+        uses: actions/upload-artifact@v4
+        with:
+          name: conjuntos
+          path: salida/conjuntos.csv
+          retention-days: 14
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: salida/sitio
+
+  publicar:
+    needs: generar
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.publicar.outputs.page_url }}
+    steps:
+      - id: publicar
+        uses: actions/deploy-pages@v4

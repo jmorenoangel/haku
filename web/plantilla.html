@@ -1,0 +1,566 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="referrer" content="no-referrer">
+<title>Informe Pauta Haku</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
+<style>
+:root{
+  --azul:#0063FF; --azul-suave:#E6EFFF; --coral:#F14635; --coral-suave:#FDE7E4;
+  --lima:#BEDF14; --verde:#2E8540; --verde-suave:#E5F3E8; --crema:#FFF8EE;
+  --tinta:#121826; --tinta-2:#4A5263; --tinta-3:#8A91A0; --linea:#E6E3DC;
+  --fondo:#F5F2EC; --tarjeta:#FFFFFF; --cabecera:#FFF8EE;
+  --mono:"IBM Plex Mono",ui-monospace,monospace; --sans:"Archivo",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --azul:#5C9BFF; --azul-suave:#16264A; --coral:#FF7A6B; --coral-suave:#3A1C19;
+    --verde:#6CCB7E; --verde-suave:#16301C; --tinta:#F2F0EB; --tinta-2:#C2C6CF;
+    --tinta-3:#8D93A0; --linea:#2A2F3A; --fondo:#0F1218; --tarjeta:#171B23; --cabecera:#141821;
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--fondo);color:var(--tinta);font-family:var(--sans);font-size:15px;line-height:1.45}
+button,input,select{font:inherit;color:inherit}
+.envoltura{max-width:1180px;margin:0 auto;padding:0 16px}
+.cabecera{background:var(--cabecera);border-bottom:1px solid var(--linea);position:relative;overflow:hidden}
+.cabecera::after{content:"";position:absolute;right:-40px;top:-40px;width:260px;height:260px;border-radius:50%;
+  border:28px solid var(--lima);opacity:.35;pointer-events:none}
+.cabecera .envoltura{padding-top:36px;padding-bottom:28px;position:relative;z-index:1}
+.antetitulo{font-family:var(--mono);font-size:12px;letter-spacing:.14em;color:var(--azul);font-weight:600;text-transform:uppercase}
+h1{font-size:clamp(30px,5vw,44px);line-height:1.05;margin:10px 0 10px;font-weight:800;letter-spacing:-.02em}
+.bajada{color:var(--tinta-2);max-width:620px;margin:0 0 16px}
+.pildora{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12.5px;
+  border:1px solid var(--linea);background:var(--tarjeta);border-radius:999px;padding:6px 12px;color:var(--tinta-2)}
+.pildora b{color:var(--tinta)}
+.punto{width:8px;height:8px;border-radius:50%;background:var(--azul)}
+main .envoltura{padding-top:28px;padding-bottom:48px}
+section{margin-bottom:36px}
+h2{font-size:22px;margin:0 0 4px;font-weight:700;letter-spacing:-.01em}
+.ayuda{color:var(--tinta-2);margin:0 0 14px;max-width:640px;font-size:14px}
+.tarjeta{background:var(--tarjeta);border:1px solid var(--linea);border-radius:14px}
+.barra{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;padding:12px 14px}
+.etiqueta{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--tinta-3);text-transform:uppercase}
+.grupo{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--linea);background:transparent;border-radius:999px;padding:5px 12px;font-size:13px;
+  cursor:pointer;font-family:var(--mono);color:var(--tinta-2);white-space:nowrap}
+.chip:hover{border-color:var(--tinta-3)}
+.chip.activo{background:var(--tinta);color:var(--tarjeta);border-color:var(--tinta)}
+.chip.sel{background:var(--azul);color:#fff;border-color:var(--azul)}
+.chip.sel2{background:var(--coral);color:#fff;border-color:var(--coral)}
+.boton{border:1px solid var(--azul);color:var(--azul);background:transparent;border-radius:999px;padding:6px 14px;
+  font-family:var(--mono);font-size:13px;cursor:pointer;font-weight:600}
+.boton:hover{background:var(--azul-suave)}
+.empuje{margin-left:auto}
+select,input[type=date]{border:1px solid var(--linea);background:var(--tarjeta);border-radius:8px;padding:6px 8px;font-size:13px}
+.fechas{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.fechas .rango{font-family:var(--mono);font-size:13px;color:var(--tinta)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--linea);
+  border:1px solid var(--linea);border-radius:14px;overflow:hidden;margin-bottom:14px}
+.kpi{background:var(--tarjeta);padding:14px 16px}
+.kpi .valor{font-size:26px;font-weight:700;letter-spacing:-.02em;margin-top:4px;font-variant-numeric:tabular-nums}
+.kpi .nota{font-size:12.5px;color:var(--tinta-3);margin-top:2px}
+.pestanas{display:flex;gap:4px;border-bottom:1px solid var(--linea);padding:0 14px;overflow-x:auto}
+.pestana{background:none;border:0;border-bottom:2px solid transparent;padding:12px 10px 10px;cursor:pointer;
+  font-weight:600;color:var(--tinta-2);white-space:nowrap;display:flex;gap:6px;align-items:center}
+.pestana.activo{color:var(--azul);border-bottom-color:var(--azul)}
+.cuenta{font-family:var(--mono);font-size:11.5px;border:1px solid var(--linea);border-radius:999px;padding:1px 7px;color:var(--tinta-3)}
+.tabla-caja{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--tinta-3);
+  font-weight:500;text-align:right;padding:10px 14px;border-bottom:1px solid var(--linea);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+td{padding:10px 14px;border-bottom:1px solid var(--linea);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.soc{cursor:pointer}
+tr.soc:hover td{background:var(--fondo)}
+tr.soc td:first-child{font-weight:600}
+tr.zona td{font-size:13.5px;color:var(--tinta-2);background:color-mix(in srgb,var(--fondo) 55%,var(--tarjeta))}
+tr.zona td:first-child{padding-left:38px}
+.flecha{display:inline-block;width:14px;color:var(--tinta-3);transition:transform .15s}
+tr.abierta .flecha{transform:rotate(90deg)}
+.nzonas{font-family:var(--mono);font-size:11px;color:var(--tinta-3);border:1px solid var(--linea);border-radius:999px;padding:1px 6px;margin-left:6px;font-weight:400}
+.cplbar{display:flex;align-items:center;gap:10px;justify-content:flex-end}
+.cplbar span.b{display:block;height:6px;border-radius:3px;background:var(--azul);opacity:.85}
+.var{font-family:var(--mono);font-size:12px;padding:2px 7px;border-radius:999px}
+.var.sube{background:var(--coral-suave);color:var(--coral)}
+.var.baja{background:var(--verde-suave);color:var(--verde)}
+.var.igual{color:var(--tinta-3)}
+tfoot td{font-weight:700;border-bottom:0}
+.grafico{padding:8px 14px 16px;height:320px;position:relative}
+.vacio{padding:28px;text-align:center;color:var(--tinta-3)}
+.nota-final{display:flex;gap:12px;padding:14px 16px;font-size:14px;color:var(--tinta-2)}
+.nota-final b{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--coral)}
+.pie{font-family:var(--mono);font-size:12px;color:var(--tinta-3);margin-top:12px}
+/* PIN */
+.puerta{max-width:380px;margin:56px auto;padding:28px 24px;text-align:center}
+.puerta h2{margin-bottom:6px}
+.puerta input{width:100%;margin:16px 0 12px;padding:12px 14px;border:1px solid var(--linea);border-radius:10px;
+  background:var(--fondo);font-size:18px;text-align:center;letter-spacing:.3em;font-family:var(--mono)}
+.puerta button{width:100%;padding:11px;border-radius:999px;border:0;background:var(--azul);color:#fff;font-weight:700;cursor:pointer}
+.puerta .error{color:var(--coral);font-size:13.5px;min-height:20px;margin-top:10px}
+[hidden]{display:none!important}
+@media (max-width:640px){
+  .grafico{height:260px}
+  th,td{padding:9px 10px}
+  tr.zona td:first-child{padding-left:26px}
+  .empuje{margin-left:0}
+}
+</style>
+</head>
+<body>
+<header class="cabecera">
+  <div class="envoltura">
+    <div class="antetitulo">Haku Creativo · Pauta Meta</div>
+    <h1>Informe sociedades</h1>
+    <p class="bajada">Cuántos leads entran y qué cuesta cada uno, en cada zona de cada sociedad. Los datos salen directo de Meta.</p>
+    <span class="pildora"><span class="punto"></span>Datos hasta el <b id="hasta">—</b></span>
+  </div>
+</header>
+
+<main>
+<div class="envoltura">
+
+  <form class="tarjeta puerta" id="puerta" hidden>
+    <h2>Escribe el PIN</h2>
+    <p class="ayuda" style="margin:0 auto">El informe está cifrado. Solo se abre con el PIN del equipo.</p>
+    <input id="pin" type="password" inputmode="text" autocomplete="current-password" aria-label="PIN" required>
+    <button type="submit" id="entrar">Entrar</button>
+    <div class="error" id="error"></div>
+  </form>
+
+  <div id="informe" hidden>
+
+    <div class="tarjeta barra" style="margin-bottom:22px">
+      <span class="etiqueta">Fechas</span>
+      <div class="grupo" id="presets"></div>
+      <div class="fechas empuje">
+        <input type="date" id="desde" aria-label="Desde"> <span class="etiqueta">a</span>
+        <input type="date" id="hastaSel" aria-label="Hasta">
+      </div>
+    </div>
+
+    <section>
+      <h2>Cada sociedad, zona por zona</h2>
+      <p class="ayuda">Elige el canal en las pestañas y toca una sociedad para ver sus zonas. La variación compara el costo por lead contra los mismos días justo antes de las fechas elegidas (rojo = más caro, verde = más barato).</p>
+      <div class="kpis" id="kpis"></div>
+      <div class="tarjeta">
+        <div class="pestanas" id="canales" role="tablist"></div>
+        <div class="barra">
+          <span class="etiqueta">Ver</span>
+          <div class="grupo" id="vistas"></div>
+          <span class="etiqueta empuje">Ordenar</span>
+          <div class="grupo" id="ordenes"></div>
+          <button class="chip" id="abrirTodas" type="button">Abrir todas</button>
+          <button class="boton" id="excel" type="button">Descargar Excel</button>
+        </div>
+        <div class="tabla-caja"><table id="tabla"></table></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Día por día</h2>
+      <p class="ayuda">Leads que entraron cada día. Con una sociedad se separa por canal; toca una segunda para compararlas.</p>
+      <div class="tarjeta">
+        <div class="barra"><span class="etiqueta">Sociedad</span><div class="grupo" id="chipsDia"></div></div>
+        <div class="barra" style="padding-top:0"><span class="etiqueta">Zona</span><select id="zonaDia"></select></div>
+        <div class="grafico"><canvas id="gDia"></canvas></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Mes a mes por sociedad</h2>
+      <p class="ayuda">Todo el año, mes por mes. La tabla de abajo muestra todas las sociedades del canal elegido arriba.</p>
+      <div class="tarjeta">
+        <div class="barra">
+          <span class="etiqueta">Ver</span><div class="grupo" id="vistaMes"></div>
+          <span class="etiqueta empuje">Zona</span><select id="zonaMes"></select>
+        </div>
+        <div class="barra" style="padding-top:0"><span class="etiqueta">Sociedad</span><div class="grupo" id="chipsMes"></div></div>
+        <div class="grafico"><canvas id="gMes"></canvas></div>
+        <div class="tabla-caja"><table id="tablaMes"></table></div>
+      </div>
+    </section>
+
+    <div class="tarjeta nota-final">
+      <b>NOTA</b>
+      <span>Los últimos días todavía se mueven: Meta sigue ajustando a qué día pertenece cada lead hasta 72 horas después. Por eso cada mañana se vuelve a traer el año completo. El alcance con «~» es la suma de los días, así que es aproximado.</span>
+    </div>
+    <div class="pie" id="pie"></div>
+  </div>
+</div>
+</main>
+
+<script>
+const CIFRADO = /*__DATOS__*/null;
+const $ = s => document.querySelector(s);
+const nf = new Intl.NumberFormat('es-CO', {maximumFractionDigits: 0});
+const nf2 = new Intl.NumberFormat('es-CO', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const pesos = v => v == null || !isFinite(v) ? '—' : '$' + nf.format(Math.round(v));
+const num = v => nf.format(v || 0);
+const pct = v => !isFinite(v) ? '—' : nf2.format(v * 100) + '%';
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+const MESES_L = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const guardar = (k, v) => { try { sessionStorage.setItem(k, v); } catch (e) {} };
+const leer = k => { try { return sessionStorage.getItem(k); } catch (e) { return null; } };
+
+/* ---------- descifrado ---------- */
+const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+async function descifrar(pin) {
+  const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pin), 'PBKDF2', false, ['deriveKey']);
+  const clave = await crypto.subtle.deriveKey(
+    {name: 'PBKDF2', salt: b64(CIFRADO.sal), iterations: CIFRADO.it, hash: 'SHA-256'},
+    base, {name: 'AES-GCM', length: 256}, false, ['decrypt']);
+  const plano = await crypto.subtle.decrypt({name: 'AES-GCM', iv: b64(CIFRADO.iv)}, clave, b64(CIFRADO.c));
+  const flujo = new Blob([plano]).stream().pipeThrough(new DecompressionStream('gzip'));
+  return await new Response(flujo).json();
+}
+
+/* ---------- estado ---------- */
+let D, F, IDX;  // datos, filas, índice de fechas
+const E = {desde: null, hasta: null, preset: 'mes', canal: 'Todos', vista: 'res', orden: 'leads',
+  abiertas: new Set(), dia: [], zonaDia: '', mes: [], zonaMes: '', vistaMes: 'leads'};
+let gDia, gMes;
+
+function preparar() {
+  IDX = new Map(D.fechas.map((f, i) => [f, i]));
+  const d = D.d, n = d.f.length;
+  F = new Array(n);
+  for (let i = 0; i < n; i++) {
+    const c = D.conjuntos[d.j[i]];
+    F[i] = {f: d.f[i], s: c.s, z: c.z, k: c.k, g: d.g[i], im: d.im[i], al: d.al[i], cl: d.cl[i], l: d.l[i]};
+  }
+}
+const vacio = () => ({g: 0, im: 0, al: 0, cl: 0, l: 0});
+function sumar(a, r) { a.g += r.g; a.im += r.im; a.al += r.al; a.cl += r.cl; a.l += r.l; return a; }
+const cpl = a => a.l ? a.g / a.l : NaN;
+
+/* fechas como índices dentro de D.fechas */
+const iso = d => d.toISOString().slice(0, 10);
+const aFecha = s => new Date(s + 'T12:00:00Z');
+function idxDesde(s) { let i = D.fechas.findIndex(f => f >= s); return i < 0 ? D.fechas.length : i; }
+function idxHasta(s) { let i = -1; for (let k = 0; k < D.fechas.length; k++) if (D.fechas[k] <= s) i = k; return i; }
+function rangoPrevio() {
+  const a = aFecha(E.desde), b = aFecha(E.hasta);
+  const dias = Math.round((b - a) / 864e5) + 1;
+  const pb = new Date(a - 864e5), pa = new Date(pb - (dias - 1) * 864e5);
+  return [iso(pa), iso(pb)];
+}
+function enRango(desde, hasta, filtro) {
+  const ia = idxDesde(desde), ib = idxHasta(hasta);
+  return F.filter(r => r.f >= ia && r.f <= ib && (!filtro || filtro(r)));
+}
+const filtroCanal = r => E.canal === 'Todos' || r.k === E.canal;
+
+/* ---------- presets de fecha ---------- */
+const PRESETS = [
+  ['mes', 'Este mes'], ['mesAnt', 'Mes anterior'], ['7', 'Últimos 7 días'], ['30', 'Últimos 30 días'], ['anio', 'Este año']];
+function aplicarPreset(p) {
+  const fin = aFecha(D.hasta);
+  let ini;
+  if (p === 'mes') ini = new Date(Date.UTC(fin.getUTCFullYear(), fin.getUTCMonth(), 1, 12));
+  else if (p === 'mesAnt') {
+    ini = new Date(Date.UTC(fin.getUTCFullYear(), fin.getUTCMonth() - 1, 1, 12));
+    const f2 = new Date(Date.UTC(fin.getUTCFullYear(), fin.getUTCMonth(), 0, 12));
+    E.desde = iso(ini); E.hasta = iso(f2); E.preset = p; return;
+  }
+  else if (p === '7' || p === '30') ini = new Date(fin - (Number(p) - 1) * 864e5);
+  else ini = new Date(Date.UTC(fin.getUTCFullYear(), 0, 1, 12));
+  E.desde = iso(ini); E.hasta = iso(fin); E.preset = p;
+}
+
+/* ---------- pintar ---------- */
+function chips(cont, opciones, activo, alClic, clase = 'activo') {
+  cont.innerHTML = opciones.map(([v, t]) =>
+    `<button type="button" class="chip ${[].concat(activo).includes(v) ? clase : ''}" data-v="${esc(v)}">${esc(t)}</button>`).join('');
+  cont.querySelectorAll('button').forEach(b => b.onclick = () => alClic(b.dataset.v));
+}
+
+function pintarFechas() {
+  chips($('#presets'), PRESETS, E.preset, p => { aplicarPreset(p); todo(); });
+  $('#desde').value = E.desde; $('#hastaSel').value = E.hasta;
+  $('#desde').min = $('#hastaSel').min = D.fechas[0];
+  $('#desde').max = $('#hastaSel').max = D.hasta;
+}
+
+function pintarKpis(filas, previas) {
+  const t = filas.reduce(sumar, vacio()), p = previas.reduce(sumar, vacio());
+  const varC = isFinite(cpl(t)) && isFinite(cpl(p)) ? cpl(t) / cpl(p) - 1 : NaN;
+  const dias = idxHasta(E.hasta) - idxDesde(E.desde) + 1;
+  $('#kpis').innerHTML = [
+    ['Leads', num(t.l), p.l ? `${t.l >= p.l ? '▲' : '▼'} ${num(Math.abs(t.l - p.l))} vs. período ant.` : '&nbsp;'],
+    ['Invertido', pesos(t.g), D.moneda],
+    ['Costo por lead', pesos(cpl(t)), isFinite(varC) ? `${varC > 0 ? '▲' : '▼'} ${nf.format(Math.abs(varC * 100))}% vs. período ant.` : '&nbsp;'],
+    ['Leads por día', dias > 0 ? nf2.format(t.l / dias) : '—', `${dias} días`],
+    ['CTR', pct(t.cl / t.im), `${num(t.cl)} clics`],
+  ].map(([e, v, n]) => `<div class="kpi"><div class="etiqueta">${e}</div><div class="valor">${v}</div><div class="nota">${n}</div></div>`).join('');
+}
+
+function agrupar(filas) {
+  const soc = new Map();
+  for (const r of filas) {
+    if (!soc.has(r.s)) soc.set(r.s, {t: vacio(), z: new Map()});
+    const s = soc.get(r.s); sumar(s.t, r);
+    if (!s.z.has(r.z)) s.z.set(r.z, vacio());
+    sumar(s.z.get(r.z), r);
+  }
+  return soc;
+}
+
+function variacion(a, p) {
+  const ca = cpl(a), cp = p ? cpl(p) : NaN;
+  if (!isFinite(ca) || !isFinite(cp) || !cp) return '<span class="var igual">—</span>';
+  const v = ca / cp - 1;
+  if (Math.abs(v) < 0.005) return '<span class="var igual">= 0%</span>';
+  return `<span class="var ${v > 0 ? 'sube' : 'baja'}">${v > 0 ? '▲' : '▼'} ${nf.format(Math.abs(v * 100))}%</span>`;
+}
+
+function pintarTabla(filas, previas) {
+  const act = agrupar(filas), prev = agrupar(previas);
+  const totales = filas.reduce(sumar, vacio());
+  let lista = [...act.entries()];
+  const clave = {nombre: ([a]) => a, cpl: ([, s]) => isFinite(cpl(s.t)) ? cpl(s.t) : Infinity, leads: ([, s]) => -s.t.l};
+  lista.sort((x, y) => { const a = clave[E.orden](x), b = clave[E.orden](y); return a < b ? -1 : a > b ? 1 : 0; });
+  const maxCpl = Math.max(1, ...lista.flatMap(([, s]) => [cpl(s.t), ...[...s.z.values()].map(cpl)]).filter(isFinite));
+  const res = E.vista === 'res';
+  const cab = res
+    ? ['Sociedad · zona', 'Invertido', 'Leads', 'Costo por lead', 'vs. período ant.']
+    : ['Sociedad · zona', 'Impresiones', 'Alcance', 'Frec.', 'Clics', 'CTR', 'Leads'];
+  const celdas = (a, p, aprox) => res
+    ? [pesos(a.g), num(a.l),
+       `<div class="cplbar"><span class="b" style="width:${isFinite(cpl(a)) ? Math.max(4, cpl(a) / maxCpl * 90) : 0}px"></span>${pesos(cpl(a))}</div>`,
+       variacion(a, p)]
+    : [num(a.im), (aprox ? '~' : '') + num(a.al), a.al ? (aprox ? '~' : '') + nf2.format(a.im / a.al) : '—',
+       num(a.cl), pct(a.cl / a.im), num(a.l)];
+  let html = `<thead><tr>${cab.map(c => `<th>${c}</th>`).join('')}</tr></thead><tbody>`;
+  if (!lista.length) html += `<tr><td colspan="${cab.length}" class="vacio">No hay pauta en estas fechas para este canal.</td></tr>`;
+  for (const [nombre, s] of lista) {
+    const abierta = E.abiertas.has(nombre);
+    const ps = prev.get(nombre);
+    html += `<tr class="soc ${abierta ? 'abierta' : ''}" data-s="${esc(nombre)}"><td><span class="flecha">›</span> ${esc(nombre)}<span class="nzonas">${s.z.size} ${s.z.size === 1 ? 'zona' : 'zonas'}</span></td>${
+      celdas(s.t, ps && ps.t, true).map(c => `<td>${c}</td>`).join('')}</tr>`;
+    if (abierta) {
+      const zs = [...s.z.entries()].sort((a, b) => E.orden === 'nombre' ? a[0].localeCompare(b[0]) :
+        E.orden === 'cpl' ? (cpl(a[1]) || Infinity) - (cpl(b[1]) || Infinity) : b[1].l - a[1].l);
+      for (const [z, a] of zs) html += `<tr class="zona"><td>${esc(z)}</td>${
+        celdas(a, ps && ps.z.get(z), false).map(c => `<td>${c}</td>`).join('')}</tr>`;
+    }
+  }
+  html += `</tbody><tfoot><tr><td>Total</td>${celdas(totales, previas.reduce(sumar, vacio()), true).map(c => `<td>${c}</td>`).join('')}</tr></tfoot>`;
+  $('#tabla').innerHTML = html;
+  $('#tabla').querySelectorAll('tr.soc').forEach(tr => tr.onclick = () => {
+    const s = tr.dataset.s; E.abiertas.has(s) ? E.abiertas.delete(s) : E.abiertas.add(s); pintarTabla(filas, previas);
+  });
+  $('#abrirTodas').textContent = E.abiertas.size >= lista.length && lista.length ? 'Cerrar todas' : 'Abrir todas';
+  $('#abrirTodas').onclick = () => {
+    if (E.abiertas.size >= lista.length) E.abiertas.clear(); else lista.forEach(([n]) => E.abiertas.add(n));
+    pintarTabla(filas, previas);
+  };
+}
+
+function pintarCanales(filas) {
+  const porCanal = new Map([['Todos', 0]]);
+  const todos = [...new Set(D.conjuntos.map(c => c.k))].sort((a, b) => a === 'Call' ? -1 : b === 'Call' ? 1 : a.localeCompare(b));
+  todos.forEach(k => porCanal.set(k, 0));
+  for (const r of filas) { porCanal.set('Todos', porCanal.get('Todos') + r.l); porCanal.set(r.k, porCanal.get(r.k) + r.l); }
+  $('#canales').innerHTML = [...porCanal.entries()].map(([k, n]) =>
+    `<button class="pestana ${E.canal === k ? 'activo' : ''}" role="tab" data-k="${esc(k)}">${esc(k)} <span class="cuenta">${num(n)}</span></button>`).join('');
+  $('#canales').querySelectorAll('button').forEach(b => b.onclick = () => { E.canal = b.dataset.k; todo(); });
+}
+
+/* ---------- gráficos ---------- */
+function colores() {
+  const cs = getComputedStyle(document.documentElement);
+  const v = n => cs.getPropertyValue(n).trim();
+  return {serie: [v('--azul'), v('--coral'), v('--verde'), v('--tinta-3')], texto: v('--tinta-3'), linea: v('--linea')};
+}
+function opcionesGrafico(eje) {
+  const c = colores();
+  return {
+    responsive: true, maintainAspectRatio: false, interaction: {mode: 'index', intersect: false},
+    plugins: {legend: {position: 'top', align: 'start', labels: {color: c.texto, usePointStyle: true, boxWidth: 8, font: {family: 'IBM Plex Mono', size: 11}}},
+      tooltip: {callbacks: {label: x => `${x.dataset.label}: ${eje === 'pesos' ? pesos(x.parsed.y) : num(x.parsed.y)}`}}},
+    scales: {
+      x: {grid: {display: false}, ticks: {color: c.texto, font: {family: 'IBM Plex Mono', size: 11}, maxRotation: 0, autoSkip: true}},
+      y: {beginAtZero: true, grid: {color: c.linea}, border: {display: false},
+        ticks: {color: c.texto, font: {family: 'IBM Plex Mono', size: 11}, callback: v => eje === 'pesos' ? pesos(v) : num(v)}}
+    }
+  };
+}
+function sociedadesOrdenadas() {
+  const t = new Map();
+  for (const r of F) t.set(r.s, (t.get(r.s) || 0) + r.l);
+  return [...t.entries()].sort((a, b) => b[1] - a[1]).map(([s]) => s);
+}
+function selector(sel, lista, valor) {
+  const zonas = [...new Set(F.filter(r => r.s === lista).map(r => r.z))].sort();
+  sel.innerHTML = `<option value="">Todas las zonas</option>` + zonas.map(z => `<option ${z === valor ? 'selected' : ''}>${esc(z)}</option>`).join('');
+}
+function alternar(arr, s) {
+  const i = arr.indexOf(s);
+  if (i >= 0) { if (arr.length > 1) arr.splice(i, 1); }
+  else { arr.push(s); if (arr.length > 2) arr.shift(); }
+}
+function series(filas, sociedades, zona, claveX, ejeX) {
+  // Con una sociedad: una serie por canal. Con dos: una por sociedad.
+  const una = sociedades.length === 1;
+  const grupos = una ? [...new Set(filas.filter(r => r.s === sociedades[0]).map(r => r.k))].sort() : sociedades;
+  return grupos.map(g => {
+    const acc = new Map(ejeX.map(x => [x, vacio()]));
+    for (const r of filas) {
+      if (una ? (r.s !== sociedades[0] || r.k !== g) : (r.s !== g || !filtroCanal(r))) continue;
+      if (zona && r.z !== zona) continue;
+      const x = claveX(r); if (acc.has(x)) sumar(acc.get(x), r);
+    }
+    return {nombre: una ? g : g, valores: ejeX.map(x => acc.get(x))};
+  });
+}
+
+function pintarDia() {
+  const orden = sociedadesOrdenadas();
+  E.dia = E.dia.filter(s => orden.includes(s)); if (!E.dia.length && orden.length) E.dia = [orden[0]];
+  chips($('#chipsDia'), orden.map(s => [s, s]), E.dia, s => { alternar(E.dia, s); E.zonaDia = ''; pintarDia(); }, 'sel');
+  $('#chipsDia').querySelectorAll('button').forEach(b => { if (E.dia[1] === b.dataset.v) b.className = 'chip sel2'; });
+  const una = E.dia.length === 1;
+  $('#zonaDia').disabled = !una;
+  selector($('#zonaDia'), una ? E.dia[0] : null, E.zonaDia);
+  $('#zonaDia').onchange = e => { E.zonaDia = e.target.value; pintarDia(); };
+  const ia = idxDesde(E.desde), ib = idxHasta(E.hasta);
+  const ejeX = []; for (let i = ia; i <= ib; i++) ejeX.push(i);
+  const filas = F.filter(r => r.f >= ia && r.f <= ib);
+  const ss = series(filas, E.dia, una ? E.zonaDia : '', r => r.f, ejeX);
+  const c = colores();
+  const datos = {
+    labels: ejeX.map(i => { const f = D.fechas[i]; return `${+f.slice(8)} ${MESES[+f.slice(5, 7) - 1]}`; }),
+    datasets: ss.map((s, i) => ({label: `${s.nombre} · ${num(s.valores.reduce((a, v) => a + v.l, 0))} leads`,
+      data: s.valores.map(v => v.l), borderColor: c.serie[i % 4], backgroundColor: c.serie[i % 4],
+      borderWidth: 2, pointRadius: ejeX.length > 45 ? 0 : 2.5, tension: .2}))
+  };
+  if (gDia) { gDia.data = datos; gDia.options = opcionesGrafico('num'); gDia.update(); }
+  else gDia = new Chart($('#gDia'), {type: 'line', data: datos, options: opcionesGrafico('num')});
+}
+
+function mesesDisponibles() {
+  return [...new Set(D.fechas.map(f => f.slice(0, 7)))];
+}
+function pintarMes() {
+  const orden = sociedadesOrdenadas();
+  E.mes = E.mes.filter(s => orden.includes(s)); if (!E.mes.length && orden.length) E.mes = [orden[0]];
+  chips($('#vistaMes'), [['leads', 'Leads'], ['cpl', 'Costo por lead']], E.vistaMes, v => { E.vistaMes = v; pintarMes(); });
+  chips($('#chipsMes'), orden.map(s => [s, s]), E.mes, s => { alternar(E.mes, s); E.zonaMes = ''; pintarMes(); }, 'sel');
+  $('#chipsMes').querySelectorAll('button').forEach(b => { if (E.mes[1] === b.dataset.v) b.className = 'chip sel2'; });
+  const una = E.mes.length === 1;
+  $('#zonaMes').disabled = !una;
+  selector($('#zonaMes'), una ? E.mes[0] : null, E.zonaMes);
+  $('#zonaMes').onchange = e => { E.zonaMes = e.target.value; pintarMes(); };
+  const meses = mesesDisponibles();
+  const mesDe = r => D.fechas[r.f].slice(0, 7);
+  const ss = series(F, E.mes, una ? E.zonaMes : '', mesDe, meses);
+  const c = colores(), esCpl = E.vistaMes === 'cpl';
+  const datos = {
+    labels: meses.map(m => MESES[+m.slice(5) - 1]),
+    datasets: ss.map((s, i) => ({label: s.nombre, data: s.valores.map(v => esCpl ? (isFinite(cpl(v)) ? Math.round(cpl(v)) : null) : v.l),
+      backgroundColor: c.serie[i % 4], borderRadius: 4, maxBarThickness: 38}))
+  };
+  const op = opcionesGrafico(esCpl ? 'pesos' : 'num');
+  if (gMes) { gMes.data = datos; gMes.options = op; gMes.update(); }
+  else gMes = new Chart($('#gMes'), {type: 'bar', data: datos, options: op});
+
+  // Tabla sociedad × mes (canal elegido arriba)
+  const tabla = new Map();
+  for (const r of F) {
+    if (!filtroCanal(r)) continue;
+    if (!tabla.has(r.s)) tabla.set(r.s, new Map());
+    const m = tabla.get(r.s), k = mesDe(r);
+    if (!m.has(k)) m.set(k, vacio());
+    sumar(m.get(k), r);
+  }
+  const val = a => !a ? '—' : esCpl ? pesos(cpl(a)) : num(a.l);
+  let html = `<thead><tr><th>Sociedad · ${esc(E.canal)}</th>${meses.map(m => `<th>${MESES[+m.slice(5) - 1]}</th>`).join('')}<th>Total</th></tr></thead><tbody>`;
+  const totMes = new Map(meses.map(m => [m, vacio()]));
+  for (const s of orden) {
+    const m = tabla.get(s); if (!m) continue;
+    const tot = vacio(); meses.forEach(k => { if (m.get(k)) { sumar(tot, m.get(k)); sumar(totMes.get(k), m.get(k)); } });
+    html += `<tr><td>${esc(s)}</td>${meses.map(k => `<td>${val(m.get(k))}</td>`).join('')}<td><b>${val(tot)}</b></td></tr>`;
+  }
+  const gran = [...totMes.values()].reduce(sumar, vacio());
+  html += `</tbody><tfoot><tr><td>Total</td>${meses.map(k => `<td>${val(totMes.get(k))}</td>`).join('')}<td>${val(gran)}</td></tr></tfoot>`;
+  $('#tablaMes').innerHTML = html;
+}
+
+/* ---------- Excel ---------- */
+function descargarExcel() {
+  if (!window.XLSX) { alert('El módulo de Excel todavía está cargando. Intenta de nuevo en un segundo.'); return; }
+  const filas = enRango(E.desde, E.hasta, filtroCanal);
+  const m = new Map();
+  for (const r of filas) {
+    const k = `${r.s}|${r.z}|${r.k}`;
+    if (!m.has(k)) m.set(k, Object.assign(vacio(), {s: r.s, z: r.z, k: r.k}));
+    sumar(m.get(k), r);
+  }
+  const salida = [...m.values()].sort((a, b) => a.s.localeCompare(b.s) || a.z.localeCompare(b.z)).map(a => ({
+    'Sociedad': a.s, 'Zona': a.z, 'Canal': a.k, 'Invertido': Math.round(a.g), 'Leads': a.l,
+    'Costo por lead': a.l ? Math.round(a.g / a.l) : null, 'Impresiones': a.im, 'Alcance (suma diaria)': a.al,
+    'Clics': a.cl, 'CTR': a.im ? +(a.cl / a.im).toFixed(4) : null}));
+  const diario = filas.map(r => ({'Fecha': D.fechas[r.f], 'Sociedad': r.s, 'Zona': r.z, 'Canal': r.k,
+    'Invertido': Math.round(r.g), 'Leads': r.l, 'Impresiones': r.im, 'Clics': r.cl}));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(salida), 'Resumen');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(diario), 'Día por día');
+  XLSX.writeFile(wb, `informe-pauta-${E.desde}-a-${E.hasta}.xlsx`);
+}
+
+/* ---------- orquestación ---------- */
+function todo() {
+  pintarFechas();
+  const filas = enRango(E.desde, E.hasta, filtroCanal);
+  const [pa, pb] = rangoPrevio();
+  const previas = enRango(pa, pb, filtroCanal);
+  pintarCanales(enRango(E.desde, E.hasta));
+  pintarKpis(filas, previas);
+  pintarVistas();
+  pintarOrdenes();
+  pintarTabla(filas, previas);
+  pintarDia();
+  pintarMes();
+}
+function pintarVistas() { chips($('#vistas'), [['res', 'Resultados'], ['sec', 'Métricas secundarias']], E.vista, v => { E.vista = v; todo(); }); }
+function pintarOrdenes() {
+  chips($('#ordenes'), [['leads', 'Leads'], ['cpl', 'Costo por lead'], ['nombre', 'Nombre']], E.orden, o => { E.orden = o; todo(); });
+}
+
+function iniciar() {
+  preparar();
+  const [a, m, d] = D.hasta.split('-');
+  $('#hasta').textContent = `${+d} de ${MESES_L[+m - 1].toLowerCase()}`;
+  $('#pie').textContent = `Fuente: Meta · campañas de captación de leads · Actualizado ${D.generado.replace('T', ' ')}`;
+  aplicarPreset('mes');
+  $('#desde').onchange = e => { if (e.target.value) { E.desde = e.target.value; E.preset = ''; if (E.desde > E.hasta) E.hasta = E.desde; todo(); } };
+  $('#hastaSel').onchange = e => { if (e.target.value) { E.hasta = e.target.value; E.preset = ''; if (E.hasta < E.desde) E.desde = E.hasta; todo(); } };
+  $('#excel').onclick = descargarExcel;
+  $('#puerta').hidden = true; $('#informe').hidden = false;
+  todo();
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { pintarDia(); pintarMes(); });
+}
+
+async function entrar(pin) {
+  $('#error').textContent = ''; $('#entrar').textContent = 'Abriendo…'; $('#entrar').disabled = true;
+  try { D = await descifrar(pin); guardar('pinInforme', pin); iniciar(); }
+  catch (e) { $('#error').textContent = 'PIN incorrecto. Intenta de nuevo.'; $('#pin').select(); }
+  finally { $('#entrar').textContent = 'Entrar'; $('#entrar').disabled = false; }
+}
+$('#puerta').onsubmit = e => { e.preventDefault(); entrar($('#pin').value.trim()); };
+if (!CIFRADO) { $('#puerta').hidden = false; $('#error').textContent = 'Este archivo es la plantilla: todavía no tiene datos.'; $('#entrar').disabled = true; }
+else if (CIFRADO.plano) { D = CIFRADO.plano; iniciar(); }
+else { $('#puerta').hidden = false; const p = leer('pinInforme'); if (p) entrar(p); }
+</script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+{
+  "_nota": "Cómo se reparte cada conjunto de anuncios. La sociedad y el canal se buscan en el nombre de la campaña y del conjunto (sin tildes, sin mayúsculas). Patrones de 8 letras o más se buscan en cualquier parte; los cortos tienen que ser una palabra completa. Para corregir un conjunto puntual usa asignaciones.csv.",
+  "sociedades": [
+    { "nombre": "Aburramotos",         "patrones": ["aburramotos", "aburra"] },
+    { "nombre": "Centromotos",         "patrones": ["centromotos"] },
+    { "nombre": "Credimotos",          "patrones": ["credimotos"] },
+    { "nombre": "Credimovil",          "patrones": ["credimovil"] },
+    { "nombre": "Motocredito",         "patrones": ["motocredito"] },
+    { "nombre": "Motomovil",           "patrones": ["motomovil"] },
+    { "nombre": "Motoracing",          "patrones": ["motoracing", "akt"] },
+    { "nombre": "Motos de la Capital", "patrones": ["motosdelacapital", "capital"] },
+    { "nombre": "Motos de los Andes",  "patrones": ["motosdelosandes", "andes"] },
+    { "nombre": "Motos del Atlantico", "patrones": ["motosdelatlantico", "atlantico"] },
+    { "nombre": "Motos del Darien",    "patrones": ["motosdeldarien", "darien"] },
+    { "nombre": "Movimotos",           "patrones": ["movimotos"] },
+    { "nombre": "Sabanamotos",         "patrones": ["sabanamotos", "sabana"] },
+    { "nombre": "Todomovil",           "patrones": ["todomovil"] },
+    { "nombre": "Motowing",            "patrones": ["motowing"] }
+  ],
+  "canales": [
+    { "nombre": "Sala",    "patrones": ["sala", "tienda", "visita"] },
+    { "nombre": "Alcance", "patrones": ["alcance", "reach", "reconocimiento"] }
+  ],
+  "canal_por_defecto": "Call",
+  "palabras_ignoradas_en_zona": ["meta", "pf", "fb", "ig", "call", "sala", "leads", "lead", "form", "formulario", "conjunto", "cbo", "abo", "copia", "copy", "nuevo", "nueva", "campana", "anuncios"]
+}

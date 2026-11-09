@@ -1,0 +1,13 @@
+{
+  "_nota": "Cuentas publicitarias de Haku2 que alimentan el informe. Solo el número, sin 'act_'.",
+  "cuentas": [
+    "1442127700890759",
+    "1108520111396078",
+    "922341867552916",
+    "3732748416818246",
+    "4383735675275045",
+    "1750518966136108"
+  ],
+  "desde": "2026-01-01",
+  "version_api": "v23.0"
+}
